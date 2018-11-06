@@ -1,0 +1,54 @@
+# github.com/faiface/beep v0.0.0-20181006150002-186a1b19424c
+github.com/faiface/beep
+github.com/faiface/beep/effects
+github.com/faiface/beep/speaker
+github.com/faiface/beep/wav
+# github.com/faiface/glhf v0.0.0-20181018222622-82a6317ac380
+github.com/faiface/glhf
+# github.com/faiface/mainthread v0.0.0-20171120011319-8b78f0a41ae3
+github.com/faiface/mainthread
+# github.com/faiface/pixel v0.8.0
+github.com/faiface/pixel
+github.com/faiface/pixel/imdraw
+github.com/faiface/pixel/pixelgl
+# github.com/go-gl/gl v0.0.0-20181026044259-55b76b7df9d2
+github.com/go-gl/gl/v3.3-core/gl
+# github.com/go-gl/glfw v0.0.0-20181014061658-691ee1b84c51
+github.com/go-gl/glfw/v3.2/glfw
+# github.com/go-gl/mathgl v0.0.0-20180804195959-cdf14b6b8f8a
+github.com/go-gl/mathgl/mgl32
+# github.com/gopherjs/gopherjs v0.0.0-20180825215210-0210a2f0f73c
+github.com/gopherjs/gopherjs/js
+# github.com/gopherjs/gopherwasm v1.0.0
+github.com/gopherjs/gopherwasm/js
+# github.com/hajimehoshi/oto v0.2.1
+github.com/hajimehoshi/oto
+# github.com/pkg/errors v0.8.0
+github.com/pkg/errors
+# golang.org/x/exp v0.0.0-20180710024300-14dda7b62fcd
+golang.org/x/exp/shiny/driver/gldriver
+golang.org/x/exp/shiny/screen
+golang.org/x/exp/shiny/driver/internal/drawer
+golang.org/x/exp/shiny/driver/internal/errscreen
+golang.org/x/exp/shiny/driver/internal/event
+golang.org/x/exp/shiny/driver/internal/lifecycler
+golang.org/x/exp/shiny/driver/internal/win32
+golang.org/x/exp/shiny/driver/internal/x11key
+# golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81
+golang.org/x/image/colornames
+golang.org/x/image/math/f32
+golang.org/x/image/math/f64
+# golang.org/x/mobile v0.0.0-20180806140643-507816974b79
+golang.org/x/mobile/app
+golang.org/x/mobile/app/internal/callfn
+golang.org/x/mobile/event/key
+golang.org/x/mobile/event/lifecycle
+golang.org/x/mobile/event/mouse
+golang.org/x/mobile/event/paint
+golang.org/x/mobile/event/size
+golang.org/x/mobile/event/touch
+golang.org/x/mobile/geom
+golang.org/x/mobile/gl
+golang.org/x/mobile/internal/mobileinit
+# golang.org/x/sys v0.0.0-20180806082429-34b17bdb4300
+golang.org/x/sys/windows
