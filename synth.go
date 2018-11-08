@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
-	"time"
 
 	"github.com/faiface/beep"
 )
@@ -30,40 +30,47 @@ func sineWave(sr beep.SampleRate, freq float64) beep.Streamer {
 	})
 }
 
-func lfo(sr beep.SampleRate, rate int, amount, cutoff float64) beep.Streamer {
-	min := cutoff - amount
-	freq := cutoff - amount/2
-	rising := true
-	if rate <= 0 {
-		rate = 1
-	}
-	if rate > 20 {
-		rate = 20
-	}
-
-	changeAfter := sr.N(500 / time.Duration(rate) * time.Millisecond)
-	if changeAfter == 0 {
-		changeAfter = 10
-	}
-	readSamples := 0
-	sine := beep.Take(changeAfter, sineWave(sr, freq))
-	return beep.StreamerFunc(func(samples [][2]float64) (int, bool) {
+func lfo(sr beep.SampleRate, rate int, amount, cutoffFreq float64) beep.Streamer {
+	lfoFreq := 1 / float64(rate)
+	lfoOscillator := sineWave(sr, lfoFreq)
+	sineFreq := cutoffFreq - (amount / 2)
+	sineOscillator := sineWave(sr, sineFreq)
+	x := 0
+	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
 		sampleLength := len(samples)
-		n, _ := sine.Stream(samples)
-		readSamples += n
-		if readSamples%changeAfter == 0 {
-			if rising {
-				freq += 20
-			} else {
-				freq -= 20
-			}
-			sine = beep.Take(changeAfter, sineWave(sr, freq))
-			readSamples = 0
-			if freq == cutoff {
-				rising = false
-			} else if freq == min {
-				rising = true
-			}
+		lfoSamples := make([][2]float64, sampleLength)
+		lfoOscillator.Stream(lfoSamples)
+		sineOscillator.Stream(samples)
+		for i := range samples {
+			samples[i][0] = math.Cos(samples[i][0] + lfoSamples[i][0])
+			samples[i][1] = math.Cos(samples[i][1] + lfoSamples[i][1])
+			x += i + 1
+			fmt.Println("x:", x, "samples:", samples[i])
+		}
+		return sampleLength, true
+	})
+}
+
+// LFO is a lfo
+func LFO(sr beep.SampleRate, rate int, amount, freq float64) beep.Streamer {
+	Ac := 1.0
+	Am := amount
+	Kf := 1.0
+	fc := freq
+	fm := 1 / float64(rate)
+	deltaF := Kf * Am
+
+	t := 0.0
+	x := 0
+	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
+		sampleLength := len(samples)
+		for i := range samples {
+			y := Ac * math.Cos(2*math.Pi*fc*t+(Am*deltaF)/fm*math.Sin(2*math.Pi*fm*t))
+			samples[i][0] = y
+			samples[i][1] = y
+			t += sr.D(1).Seconds()
+			x += i + 1
+			fmt.Println("x:", x, "samples:", samples[i])
 		}
 		return sampleLength, true
 	})
