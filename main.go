@@ -41,7 +41,12 @@ func main() {
 			beep.Callback(func() { fmt.Println("LFO 2 seconds") }),
 			beep.Take(
 				speakerSampleRate.N(2*time.Second),
-				LFO(speakerSampleRate, 2, 20, 750),
+				lfo(speakerSampleRate, 2, 175, 600),
+			),
+			beep.Callback(func() { fmt.Println("sawtooth 2 seconds") }),
+			beep.Take(
+				speakerSampleRate.N(2*time.Second),
+				sawtooth(speakerSampleRate, 600),
 			),
 			beep.Callback(func() { fmt.Println("noise") }),
 			beep.Take(
@@ -51,13 +56,6 @@ func main() {
 					Base:     2,
 					Volume:   -5,
 				},
-			),
-			beep.Callback(func() { fmt.Println("lfo 2 seconds") }),
-			streamErrorPrinter(
-				beep.Take(
-					speakerSampleRate.N(2*time.Second),
-					lfo(speakerSampleRate, 2, 200, 750),
-				),
 			),
 			// beep.Callback(func() {
 			// 	fmt.Println("splitted stereo mix")
@@ -89,7 +87,7 @@ func streamErrorPrinter(s beep.Streamer) beep.Streamer {
 	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
 		return beep.Seq(
 			s,
-			beep.Callback(func(){
+			beep.Callback(func() {
 				if s.Err() != nil {
 					fmt.Printf("Stream error: %v\n", s.Err())
 				}

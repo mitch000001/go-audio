@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 
@@ -30,38 +29,29 @@ func sineWave(sr beep.SampleRate, freq float64) beep.Streamer {
 	})
 }
 
-func lfo(sr beep.SampleRate, rate int, amount, cutoffFreq float64) beep.Streamer {
-	lfoFreq := 1 / float64(rate)
-	lfoOscillator := sineWave(sr, lfoFreq)
-	sineFreq := cutoffFreq - (amount / 2)
-	sineOscillator := sineWave(sr, sineFreq)
-	x := 0
+func sawtooth(sr beep.SampleRate, freq float64) beep.Streamer {
+	a := 1.0
+	t := 0.0
 	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
 		sampleLength := len(samples)
-		lfoSamples := make([][2]float64, sampleLength)
-		lfoOscillator.Stream(lfoSamples)
-		sineOscillator.Stream(samples)
 		for i := range samples {
-			samples[i][0] = math.Cos(samples[i][0] + lfoSamples[i][0])
-			samples[i][1] = math.Cos(samples[i][1] + lfoSamples[i][1])
-			x += i + 1
-			fmt.Println("x:", x, "samples:", samples[i])
+			samples[i][0] = 2 * (t/a - math.Floor(1/2+t/a))
+			samples[i][1] = 2 * (t/a - math.Floor(1/2+t/a))
+			t += sr.D(1).Seconds()
 		}
 		return sampleLength, true
 	})
 }
 
-// LFO is a lfo
-func LFO(sr beep.SampleRate, rate int, amount, freq float64) beep.Streamer {
+func lfo(sr beep.SampleRate, rate int, amount, freq float64) beep.Streamer {
 	Ac := 1.0
-	Am := amount
-	Kf := 1.0
+	Am := 1.0
+	Kf := amount
 	fc := freq
 	fm := 1 / float64(rate)
 	deltaF := Kf * Am
 
 	t := 0.0
-	x := 0
 	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
 		sampleLength := len(samples)
 		for i := range samples {
@@ -69,8 +59,6 @@ func LFO(sr beep.SampleRate, rate int, amount, freq float64) beep.Streamer {
 			samples[i][0] = y
 			samples[i][1] = y
 			t += sr.D(1).Seconds()
-			x += i + 1
-			fmt.Println("x:", x, "samples:", samples[i])
 		}
 		return sampleLength, true
 	})
