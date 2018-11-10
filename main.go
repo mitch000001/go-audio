@@ -29,24 +29,40 @@ func main() {
 	// left, right := splitToMono(buffer)
 	speakerSampleRate := beep.SampleRate(48000)
 	fmt.Println("Speaker SampleRate:", speakerSampleRate)
-	speaker.Init(speakerSampleRate, speakerSampleRate.N(time.Second))
+	speaker.Init(speakerSampleRate, speakerSampleRate.N(time.Second/10))
 	done := make(chan struct{})
+	octavePitch := pitchPerSemitone(-12, 440)
 	speaker.Play(
 		beep.Seq(
-			beep.Callback(func() { fmt.Println("sinewave 1") }),
+			beep.Callback(func() { fmt.Println("sinewave") }),
 			beep.Take(
 				speakerSampleRate.N(2*time.Second),
-				sineWave(speakerSampleRate, 750),
+				sineWave(speakerSampleRate, 440),
 			),
-			beep.Callback(func() { fmt.Println("LFO 2 seconds") }),
+			beep.Callback(func() { fmt.Println("sinewave octave pitch") }),
 			beep.Take(
 				speakerSampleRate.N(2*time.Second),
-				lfo(speakerSampleRate, 2, 175, 600),
+				sineWave(speakerSampleRate, octavePitch),
 			),
 			beep.Callback(func() { fmt.Println("sawtooth 2 seconds") }),
 			beep.Take(
 				speakerSampleRate.N(2*time.Second),
-				sawtooth(speakerSampleRate, 600),
+				sawtoothWave(speakerSampleRate, 440),
+			),
+			beep.Callback(func() { fmt.Println("triangle 2 seconds") }),
+			beep.Take(
+				speakerSampleRate.N(2*time.Second),
+				triangleWave(speakerSampleRate, 440),
+			),
+			beep.Callback(func() { fmt.Println("square 2 seconds") }),
+			beep.Take(
+				speakerSampleRate.N(2*time.Second),
+				squareWave(speakerSampleRate, 440),
+			),
+			beep.Callback(func() { fmt.Println("LFO 2 seconds") }),
+			beep.Take(
+				speakerSampleRate.N(2*time.Second),
+				lfo(speakerSampleRate, 2, 175, 440),
 			),
 			beep.Callback(func() { fmt.Println("noise") }),
 			beep.Take(
@@ -66,6 +82,7 @@ func main() {
 			// 	right,
 			// )),
 			beep.Callback(func() {
+				<-time.After(4 * time.Second)
 				close(done)
 			}),
 		),

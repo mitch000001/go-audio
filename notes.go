@@ -1,5 +1,31 @@
 package main
 
+import (
+	"fmt"
+	"math"
+
+	"github.com/faiface/beep"
+)
+
+func pitch(semiTones int, s beep.Streamer) beep.Streamer {
+	return beep.StreamerFunc(func(samples [][2]float64) (int, bool) {
+		sampleLength := len(samples)
+		origSamples := make([][2]float64, sampleLength)
+		n, ok := s.Stream(origSamples)
+		for i := range samples[:n] {
+			samples[i][0] = samples[i][0] * pitchPerSemitone(semiTones, 0)
+			samples[i][1] = samples[i][1] * pitchPerSemitone(semiTones, 0)
+		}
+		return n, ok
+	})
+}
+
+func pitchPerSemitone(semiTones int, freq float64) float64 {
+	pow := float64(semiTones) / 12.0
+	fmt.Println("Pow:", pow)
+	return math.Pow(2, pow) * freq
+}
+
 var notes = map[string]float64{
 	"C8":      4186.01,
 	"B7":      3951.07,

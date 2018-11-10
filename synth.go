@@ -15,12 +15,12 @@ var noise = beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
 	return len(samples), true
 })
 
-func sineWave(sr beep.SampleRate, freq float64) beep.Streamer {
+func wave(sr beep.SampleRate, waveForm func(t float64) float64) beep.Streamer {
 	t := 0.0
 	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
 		sampleLength := len(samples)
 		for i := range samples {
-			y := math.Sin(math.Pi * freq * t)
+			y := waveForm(t)
 			samples[i][0] = y
 			samples[i][1] = y
 			t += sr.D(1).Seconds()
@@ -29,18 +29,99 @@ func sineWave(sr beep.SampleRate, freq float64) beep.Streamer {
 	})
 }
 
-func sawtooth(sr beep.SampleRate, freq float64) beep.Streamer {
-	a := 1.0
+func sineWave(sr beep.SampleRate, freq float64) beep.Streamer {
 	t := 0.0
+	sineFn := sine(1, freq, 0)
 	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
 		sampleLength := len(samples)
 		for i := range samples {
-			samples[i][0] = 2 * (t/a - math.Floor(1/2+t/a))
-			samples[i][1] = 2 * (t/a - math.Floor(1/2+t/a))
+			y := sineFn(t)
+			samples[i][0] = y
+			samples[i][1] = y
 			t += sr.D(1).Seconds()
 		}
 		return sampleLength, true
 	})
+}
+
+func sine(amplitude float64, frequency float64, phaseShift float64) func(t float64) float64 {
+	return func(t float64) float64 {
+		return amplitude * math.Sin(
+			2*math.Pi*frequency*t+phaseShift,
+		)
+	}
+}
+
+func sawtoothWave(sr beep.SampleRate, freq float64) beep.Streamer {
+	t := 0.0
+	sawFn := sawtooth(1, freq, 0)
+	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
+		sampleLength := len(samples)
+		for i := range samples {
+			samples[i][0] = sawFn(t)
+			samples[i][1] = sawFn(t)
+			t += sr.D(1).Seconds()
+		}
+		return sampleLength, true
+	})
+}
+
+func sawtooth(amplitude float64, frequency float64, phaseShift float64) func(t float64) float64 {
+	return func(t float64) float64 {
+		return -(amplitude / 2 / math.Pi) * math.Atan(
+			1/math.Tan(
+				(t*math.Pi)/(1/frequency),
+			),
+		)
+	}
+}
+
+func triangleWave(sr beep.SampleRate, freq float64) beep.Streamer {
+	t := 0.0
+	triangleFn := triangle(1, freq, 0)
+	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
+		sampleLength := len(samples)
+		for i := range samples {
+			samples[i][0] = triangleFn(t)
+			samples[i][1] = triangleFn(t)
+			t += sr.D(1).Seconds()
+		}
+		return sampleLength, true
+	})
+}
+
+func triangle(amplitude float64, frequency float64, phaseShift float64) func(t float64) float64 {
+	return func(t float64) float64 {
+		return (2 * amplitude / math.Pi) * math.Asin(
+			math.Sin(
+				((2*math.Pi)/(1/frequency))*t,
+			),
+		)
+	}
+}
+
+func squareWave(sr beep.SampleRate, freq float64) beep.Streamer {
+	t := 0.0
+	squareFn := square(1, freq, 0)
+	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
+		sampleLength := len(samples)
+		for i := range samples {
+			samples[i][0] = squareFn(t)
+			samples[i][1] = squareFn(t)
+			t += sr.D(1).Seconds()
+		}
+		return sampleLength, true
+	})
+}
+
+func square(amplitude float64, frequency float64, phaseShift float64) func(t float64) float64 {
+	return func(t float64) float64 {
+		return amplitude / 4 * math.Copysign(1,
+			math.Sin(
+				2*math.Pi*frequency*t+phaseShift,
+			),
+		)
+	}
 }
 
 func lfo(sr beep.SampleRate, rate int, amount, freq float64) beep.Streamer {
