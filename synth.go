@@ -124,6 +124,28 @@ func square(amplitude float64, frequency float64, phaseShift float64) func(t flo
 	}
 }
 
+func pulseWave(sr beep.SampleRate, freq float64, dutyCycle float64) beep.Streamer {
+	t := 0.0
+	sawFn := sawtooth(1, freq, 0)
+	sineFn := sine(1, freq, 0)
+	return beep.StreamerFunc(func(samples [][2]float64) (n int, ok bool) {
+		sampleLength := len(samples)
+		for i := range samples {
+			sine := sineFn(t)
+			saw := sawFn(t)
+			if sine > saw {
+				samples[i][0] = 1.0
+				samples[i][1] = 1.0
+			} else {
+				samples[i][0] = 0.0
+				samples[i][1] = 0.0
+			}
+			t += sr.D(1).Seconds()
+		}
+		return sampleLength, true
+	})
+}
+
 func lfo(sr beep.SampleRate, rate int, amount, freq float64) beep.Streamer {
 	Ac := 1.0
 	Am := 1.0

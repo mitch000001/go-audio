@@ -59,6 +59,11 @@ func main() {
 				speakerSampleRate.N(2*time.Second),
 				squareWave(speakerSampleRate, 440),
 			),
+			beep.Callback(func() { fmt.Println("pulse 2 seconds") }),
+			beep.Take(
+				speakerSampleRate.N(2*time.Second),
+				pulseWave(speakerSampleRate, 440, 0.3),
+			),
 			beep.Callback(func() { fmt.Println("LFO 2 seconds") }),
 			beep.Take(
 				speakerSampleRate.N(2*time.Second),
