@@ -10,7 +10,7 @@ import (
 	"github.com/faiface/beep/effects"
 	"github.com/faiface/beep/speaker"
 
-	// "github.com/faiface/beep/wav"
+	"github.com/faiface/beep/wav"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
@@ -18,18 +18,41 @@ import (
 )
 
 func main() {
-	// f, err := os.Open(os.Args[1])
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// buffer, format, err := wav.Decode(f)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// left, right := splitToMono(buffer)
 	speakerSampleRate := beep.SampleRate(48000)
 	fmt.Println("Speaker SampleRate:", speakerSampleRate)
 	speaker.Init(speakerSampleRate, speakerSampleRate.N(time.Second/10))
+
+	hasAdditionalArg := len(os.Args) > 1
+	var hasFileArg bool
+	if hasAdditionalArg {
+		info, _ := os.Stat(os.Args[1])
+		if info != nil && !info.IsDir() {
+			hasFileArg = true
+		}
+	}
+	hasAudioArg := hasAdditionalArg && hasFileArg
+	audioStreamer := beep.Callback(func(){})
+	if hasAudioArg {
+		f, err := os.Open(os.Args[1])
+		if err != nil {
+			panic(err)
+		}
+		buffer, format, err := wav.Decode(f)
+		if err != nil {
+			panic(err)
+		}
+		left, right := splitToMono(buffer)
+		audioStreamer = beep.Seq(
+			beep.Callback(func() {
+				fmt.Println("splitted stereo mix")
+				fmt.Println("Format:", format)
+			}),
+			beep.Resample(4, format.SampleRate, speakerSampleRate, beep.Mix(
+				left,
+				right,
+			)),
+		)
+	}
 	done := make(chan struct{})
 	octavePitch := pitchPerSemitone(-12, 440)
 	speaker.Play(
@@ -78,14 +101,7 @@ func main() {
 					Volume:   -5,
 				},
 			),
-			// beep.Callback(func() {
-			// 	fmt.Println("splitted stereo mix")
-			// 	fmt.Println("SampleRate:", format.SampleRate)
-			// }),
-			// beep.Resample(4, format.SampleRate, speakerSampleRate, beep.Mix(
-			// 	left,
-			// 	right,
-			// )),
+			audioStreamer,
 			beep.Callback(func() {
 				<-time.After(4 * time.Second)
 				close(done)
