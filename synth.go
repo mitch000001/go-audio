@@ -70,7 +70,7 @@ func sawtooth(amplitude float64, frequency float64, phaseShift float64) func(t f
 	return func(t float64) float64 {
 		return -(amplitude / 2 / math.Pi) * math.Atan(
 			1/math.Tan(
-				(t*math.Pi)/(1/frequency),
+				t*math.Pi*frequency,
 			),
 		)
 	}
